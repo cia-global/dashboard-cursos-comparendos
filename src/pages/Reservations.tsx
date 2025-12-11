@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Reservation, City } from '../types/database';
+import { Appointment, City } from '../types/database';
 import { Plus, Calendar, Search } from 'lucide-react';
 import ReservationForm from '../components/ReservationForm';
 
-interface ReservationWithCity extends Reservation {
+interface ReservationWithCity extends Appointment {
   cities?: City | null;
 }
 
@@ -21,7 +21,7 @@ export default function Reservations() {
   const fetchReservations = async () => {
     try {
       const { data, error } = await supabase
-        .from('reservations')
+        .from('appointments')
         .select('*, cities(*)')
         .order('appointment_date', { ascending: false })
         .order('appointment_time', { ascending: false });

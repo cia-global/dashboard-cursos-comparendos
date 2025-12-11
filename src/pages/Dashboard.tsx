@@ -25,7 +25,7 @@ export default function Dashboard() {
       const today = new Date().toISOString().split('T')[0];
 
       const { count: todayCount } = await supabase
-        .from('reservations')
+        .from('appointments')
         .select('*', { count: 'exact', head: true })
         .eq('appointment_date', today);
 

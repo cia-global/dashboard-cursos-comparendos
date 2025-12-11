@@ -16,7 +16,7 @@ export interface City {
   created_at: string;
 }
 
-export interface Reservation {
+export interface Appointment {
   id: string;
   city_id: string;
   course_type_id: string;
@@ -46,9 +46,9 @@ export interface Database {
         Update: Partial<Omit<City, 'id' | 'created_at' | 'updated_at'>>;
       };
       reservations: {
-        Row: Reservation;
-        Insert: Omit<Reservation, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Reservation, 'id' | 'created_at' | 'updated_at'>>;
+        Row: Appointment;
+        Insert: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Appointment, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
   };
