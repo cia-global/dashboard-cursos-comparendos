@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Calendar, CalendarClock, MapPin } from 'lucide-react';
+import { Calendar, CalendarClock, MapPin, CalendarRange } from 'lucide-react';
 
 interface Stats {
   todayReservations: number;
@@ -59,12 +59,18 @@ export default function Dashboard() {
       icon: Calendar,
       color: 'bg-blue-500',
       description: 'Citas programadas para hoy',
+    },{
+      title: 'Reservas de esta semana',
+      value: stats.upcomingReservations,
+      icon: CalendarRange,
+      color: 'bg-green-500',
+      description: 'Citas pendientes en total',
     },
     {
       title: 'Reservas Próximas',
       value: stats.upcomingReservations,
       icon: CalendarClock,
-      color: 'bg-green-500',
+      color: 'bg-yellow-500',
       description: 'Citas pendientes en total',
     },
     {
@@ -92,7 +98,7 @@ export default function Dashboard() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Dashboard</h1>
         <p className="text-slate-600">
-          Resumen general del sistema de educación vial
+          Resumen general del sistema de agendamiento cursos comparendos
         </p>
       </div>
 
@@ -123,7 +129,7 @@ export default function Dashboard() {
 
       <div className="mt-8 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h2 className="text-xl font-bold text-slate-900 mb-4">
-          Bienvenido al Sistema de Gestión Vial
+          Bienvenido al Sistema de Gestión de agendamientos
         </h2>
         <p className="text-slate-600 leading-relaxed">
           Este panel administrativo te permite gestionar reservas, ciudades y usuarios del sistema de educación y sensibilización vial.

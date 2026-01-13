@@ -21,15 +21,19 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full">
+    <div className="min-h-screen bg-slate-50 flex shadow-sm border border-slate-600">
+      <aside className="w-64 bg-white text-black flex flex-col fixed h-full shadow-sm border border-slate-200">
         <div className="p-6 border-b border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="bg-slate-700 p-2 rounded-lg">
-              <Car className="w-6 h-6" />
-            </div>
+            
+               <img
+                src="/images/icon.png"
+                alt="Banner decorativo"
+                className=" h-10 w-10 object-contain "
+                />
+            
             <div>
-              <h1 className="text-lg font-bold">Dashboard Vial</h1>
+              <h1 className="text-lg font-bold">Cursos Comparendos</h1>
               <p className="text-xs text-slate-400">Sistema administrativo</p>
             </div>
           </div>
@@ -45,8 +49,8 @@ export default function DashboardLayout() {
                     to={item.path}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                       isActive(item.path)
-                        ? 'bg-slate-700 text-white'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 text-white'
+                        : 'text-slate-500 hover:bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 hover:text-white'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -59,7 +63,7 @@ export default function DashboardLayout() {
         </nav>
 
         <div className="p-4 border-t border-slate-700">
-          <div className="mb-4 px-4 py-3 bg-slate-800 rounded-lg">
+          <div className="mb-4 px-4 py-3 bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 rounded-lg">
             <p className="text-sm text-slate-400">Usuario activo</p>
             <p className="font-medium truncate text-white">{user?.email}</p>
             <p className="text-xs text-slate-400 mt-1">
@@ -68,7 +72,7 @@ export default function DashboardLayout() {
           </div>
           <button
             onClick={signOut}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition font-medium"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition font-medium text-white"
           >
             <LogOut className="w-4 h-4" />
             Cerrar Sesión

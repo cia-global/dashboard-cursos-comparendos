@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Appointment, City } from '../types/database';
-import { Plus, Calendar, Search } from 'lucide-react';
+import { Plus, Calendar, Search, NotebookPen } from 'lucide-react';
 import ReservationForm from '../components/ReservationForm';
+import EditReservationModal from '../components/EditAppointmentModal';
 
 interface ReservationWithCity extends Appointment {
   cities?: City | null;
@@ -13,6 +14,7 @@ export default function Reservations() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+   const [editingReservation, setEditingReservation] = useState<Appointment | null>(null);
 
   useEffect(() => {
     fetchReservations();
@@ -91,7 +93,7 @@ export default function Reservations() {
         <div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Reservas</h1>
           <p className="text-slate-600">
-            Gestión de citas para educación vial
+            Gestión de citas para cursos comparendos
           </p>
         </div>
         <button
@@ -108,7 +110,7 @@ export default function Reservations() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Buscar por nombre, identificación o citación..."
+            placeholder="Buscar por nombre o identificación"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
@@ -128,9 +130,6 @@ export default function Reservations() {
                   Identificación
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Citación
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Fecha
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
@@ -141,6 +140,9 @@ export default function Reservations() {
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Estado
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  Editar
                 </th>
               </tr>
             </thead>
@@ -162,9 +164,6 @@ export default function Reservations() {
                       {reservation.id_number}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
-                      {reservation.citation_number}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
                       {formatDate(reservation.appointment_date)}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
@@ -175,6 +174,13 @@ export default function Reservations() {
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {getStatusBadge(reservation.status)}
+                    </td>
+                     <td className="px-6 py-4 text-sm">
+                      <button
+                      onClick={() => setEditingReservation(reservation)}
+                       className="text-slate-600 hover:text-slate-900 transition"
+                        title="Editar reserva"
+                      ><NotebookPen className="w-4 h-4 " /></button>
                     </td>
                   </tr>
                 ))
@@ -189,6 +195,16 @@ export default function Reservations() {
           onClose={() => setShowForm(false)}
           onSuccess={() => {
             setShowForm(false);
+            fetchReservations();
+          }}
+        />
+      )}
+        {editingReservation && (
+        <EditReservationModal
+          reservation={editingReservation}
+          onClose={() => setEditingReservation(null)}
+          onSuccess={() => {
+            setEditingReservation(null);
             fetchReservations();
           }}
         />
