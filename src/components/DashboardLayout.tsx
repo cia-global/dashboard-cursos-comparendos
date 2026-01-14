@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Calendar, MapPin, Users, LogOut, Car } from 'lucide-react';
+import { LayoutDashboard, Calendar, MapPin, Users, LogOut, Car, CalendarClock } from 'lucide-react';
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -9,6 +9,7 @@ export default function DashboardLayout() {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/reservations', label: 'Reservas', icon: Calendar },
+    { path: '/schedules', label: 'Horarios', icon: CalendarClock },
     { path: '/cities', label: 'Ciudades', icon: MapPin },
     { path: '/users', label: 'Usuarios', icon: Users },
   ];
