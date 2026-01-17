@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import type { Appointment } from '../types/database';
+import type { Appointment, Schedule } from '../types/database';
+
 
 interface EditReservationModalProps {
   reservation: Appointment;
@@ -16,9 +17,19 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelada', color: 'bg-red-100 text-red-800' },
 ];
 
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const getDayNameFromDate = (dateString: string): string => {
+  if (!dateString) return '';
+  const date = new Date(dateString + 'T00:00:00');
+  return DAY_NAMES[date.getDay()];
+};
+
 export default function EditReservationModal({ reservation, onClose, onSuccess }: EditReservationModalProps) {
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(reservation.status);
+  const [loadingSchedules, setLoadingSchedules] = useState(false);
+  const [status, setStatus] = useState<'pending' | 'confirmed' | 'completed' | 'cancelled'>(reservation.status);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [formData, setFormData] = useState({
     full_name: reservation.full_name,
     id_number: reservation.id_number,
@@ -27,29 +38,86 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
     email: reservation.email,
     appointment_date: reservation.appointment_date,
     appointment_time: reservation.appointment_time.substring(0, 5), // HH:mm
+    city_id: reservation.city_id,
   });
+
+  // 👇 CARGAR SCHEDULES AL MONTAR EL COMPONENTE
+  useEffect(() => {
+    if (formData.city_id) {
+      fetchSchedules(formData.city_id);
+    }
+  }, []);
+
+  // 👇 RECARGAR SCHEDULES CUANDO CAMBIA LA CIUDAD O FECHA
+  useEffect(() => {
+    if (formData.city_id) {
+      fetchSchedules(formData.city_id);
+    }
+  }, [formData.city_id]);
+
+  const fetchSchedules = async (cityId: string) => {
+    setLoadingSchedules(true);
+    try {
+      console.log('📅 Cargando schedules para ciudad:', cityId);
+      
+      const { data, error } = await supabase
+        .from('schedules')
+        .select('*')
+        .eq('city_id', cityId)
+        .eq('is_active', true)
+        .order('day_of_week')
+        .order('start_time');
+
+      if (error) throw error;
+      
+      console.log('📅 Schedules cargados:', data);
+      setSchedules(data || []);
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+      setSchedules([]);
+    } finally {
+      setLoadingSchedules(false);
+    }
+  };
+
+  // 👇 FILTRAR SCHEDULES POR DÍA SELECCIONADO
+  const filteredSchedules = useMemo(() => {
+    if (!formData.appointment_date || schedules.length === 0) {
+      console.log('⚠️ No hay fecha seleccionada o no hay schedules');
+      return [];
+    }
+
+    const selectedDayName = getDayNameFromDate(formData.appointment_date);
+    console.log('📅 Día seleccionado:', selectedDayName);
+    
+    const filtered = schedules
+      .filter(s => s.day_of_week === selectedDayName)
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+
+    console.log('📅 Horarios filtrados:', filtered);
+    return filtered;
+  }, [schedules, formData.appointment_date]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-    const updateData = {
-      full_name: formData.full_name,
-      id_number: formData.id_number,
-      citation_number: formData.citation_number,
-      phone: formData.phone,
-      email: formData.email,
-      appointment_date: formData.appointment_date,
-      appointment_time: formData.appointment_time,
-      status: status,
-      updated_at: new Date().toISOString(),
-    };
+      const updateData = {
+        full_name: formData.full_name,
+        id_number: formData.id_number,
+        citation_number: formData.citation_number,
+        phone: formData.phone,
+        email: formData.email,
+        appointment_date: formData.appointment_date,
+        appointment_time: formData.appointment_time,
+        status: status,
+      };
 
-     const { error } = await supabase
-      .from('appointments')
-      .update(updateData)
-      .eq('id', reservation.id);
+      const { error } = await supabase
+        .from('appointments')
+        .update(updateData)
+        .eq('id', reservation.id);
 
       if (error) throw error;
 
@@ -136,10 +204,9 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
                 </label>
                 <input
                   type="text"
+                  disabled
                   value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 
@@ -150,24 +217,22 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
                 </label>
                 <input
                   type="text"
+                  disabled
                   value={formData.id_number}
-                  onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 
               {/* Número de citación */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número de Citación
+                  Número de Comparendo
                 </label>
                 <input
                   type="text"
+                  disabled
                   value={formData.citation_number}
-                  onChange={(e) => setFormData({ ...formData, citation_number: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 
@@ -178,10 +243,9 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
                 </label>
                 <input
                   type="tel"
+                  disabled
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 
@@ -192,10 +256,9 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
                 </label>
                 <input
                   type="email"
+                  disabled
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 
@@ -207,7 +270,14 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
                 <input
                   type="date"
                   value={formData.appointment_date}
-                  onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })}
+                  onChange={(e) => {
+                    console.log('📅 Fecha cambiada a:', e.target.value);
+                    setFormData({ 
+                      ...formData, 
+                      appointment_date: e.target.value,
+                      appointment_time: '' // 👈 Resetear hora cuando cambia la fecha
+                    });
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                   required
                 />
@@ -216,15 +286,30 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
               {/* Hora */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hora
+                  Hora {loadingSchedules && <span className="text-xs text-gray-500">(Cargando...)</span>}
                 </label>
-                <input
-                  type="time"
-                  value={formData.appointment_time}
-                  onChange={(e) => setFormData({ ...formData, appointment_time: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                <select
                   required
-                />
+                  value={formData.appointment_time}
+                  onChange={(e) => {
+                    console.log('⏰ Hora cambiada a:', e.target.value);
+                    setFormData({ ...formData, appointment_time: e.target.value });
+                  }}
+                  disabled={loadingSchedules || filteredSchedules.length === 0}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">Seleccionar hora</option>
+                  {filteredSchedules.map((schedule) => (
+                    <option key={schedule.id} value={schedule.start_time.substring(0, 5)}>
+                      {schedule.start_time.substring(0, 5)}
+                    </option>
+                  ))}
+                </select>
+                {!loadingSchedules && filteredSchedules.length === 0 && formData.appointment_date && (
+                  <p className="text-xs text-red-500 mt-1">
+                    No hay horarios disponibles para este día
+                  </p>
+                )}
               </div>
             </div>
 
