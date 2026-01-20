@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Calendar, MapPin, Users, LogOut, Car } from 'lucide-react';
+import { LayoutDashboard, Calendar, MapPin, Users, LogOut, Car, CalendarClock } from 'lucide-react';
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -9,6 +9,7 @@ export default function DashboardLayout() {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/reservations', label: 'Reservas', icon: Calendar },
+    { path: '/schedules', label: 'Horarios', icon: CalendarClock },
     { path: '/cities', label: 'Ciudades', icon: MapPin },
     { path: '/users', label: 'Usuarios', icon: Users },
   ];
@@ -21,15 +22,19 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex shadow-sm border border-slate-600">
       <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full">
         <div className="p-6 border-b border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="bg-slate-700 p-2 rounded-lg">
-              <Car className="w-6 h-6" />
-            </div>
+            
+               <img
+                src="/images/icon.png"
+                alt="Banner decorativo"
+                className=" h-10 w-10 object-contain "
+                />
+            
             <div>
-              <h1 className="text-lg font-bold">Dashboard Vial</h1>
+              <h1 className="text-lg font-bold">Cursos Comparendos</h1>
               <p className="text-xs text-slate-400">Sistema administrativo</p>
             </div>
           </div>
@@ -68,7 +73,7 @@ export default function DashboardLayout() {
           </div>
           <button
             onClick={signOut}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition font-medium"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition font-medium text-white"
           >
             <LogOut className="w-4 h-4" />
             Cerrar Sesión

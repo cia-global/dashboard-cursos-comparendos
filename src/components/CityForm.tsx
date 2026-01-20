@@ -13,7 +13,7 @@ export default function CityForm({ city, onClose, onSuccess }: CityFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    code: '',
+    id: '',
     is_active: true,
   });
 
@@ -21,7 +21,7 @@ export default function CityForm({ city, onClose, onSuccess }: CityFormProps) {
     if (city) {
       setFormData({
         name: city.name,
-        code: city.code,
+        id: city.id,
         is_active: city.is_active,
       });
     }
@@ -94,9 +94,9 @@ export default function CityForm({ city, onClose, onSuccess }: CityFormProps) {
               <input
                 type="text"
                 required
-                value={formData.code}
+                value={formData.id}
                 onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value.toUpperCase() })
+                  setFormData({ ...formData, id: e.target.value.toUpperCase() })
                 }
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent uppercase"
                 placeholder="Ej: BOG"

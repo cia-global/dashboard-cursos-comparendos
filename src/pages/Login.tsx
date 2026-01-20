@@ -31,14 +31,18 @@ export default function Login() {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="flex flex-col items-center mb-8">
-            <div className="bg-slate-800 p-4 rounded-full mb-4">
-              <Car className="w-12 h-12 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">
-              Dashboard Vial
+            
+              <img
+                src="/images/icon.png"
+                alt="Banner decorativo"
+                className=" h-16 w-16 object-contain "
+                />
+            
+            <h1 className="text-3xl text-center font-bold text-slate-800 mb-2">
+              Dashboard Cursos Comparendos
             </h1>
             <p className="text-slate-600 text-center">
-              Sistema de Educación y Sensibilización Vial
+              Sistema de Gestion de Agendamientos
             </p>
           </div>
 

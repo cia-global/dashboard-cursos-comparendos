@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Reservations from './pages/Reservations';
 import Cities from './pages/Cities';
 import Users from './pages/Users';
+import Schedules from './pages/Schedules';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="reservations" element={<Reservations />} />
             <Route path="cities" element={<Cities />} />
+            <Route path="schedules" element={<Schedules />} />
             <Route path="users" element={<Users />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

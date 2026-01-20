@@ -4,13 +4,21 @@ import { UserRoleRecord } from '../types/database';
 import { Users as UsersIcon, Shield, UserCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-interface UserWithEmail extends UserRoleRecord {
-  email?: string;
+interface UserRole {
+  id: string;
+  user_id: string;
+  role: 'admin' | 'recepcion';
+  created_at: string;
+}
+
+interface UserWithEmail extends UserRole {
+  email: string;
 }
 
 export default function Users() {
   const [users, setUsers] = useState<UserWithEmail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { role } = useAuth();
 
   useEffect(() => {
@@ -20,27 +28,55 @@ export default function Users() {
   }, [role]);
 
   const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      const { data: userRoles, error } = await supabase
+      console.log('👥 Obteniendo usuarios...');
+      
+      // 1. Obtener roles de usuarios
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (rolesError) {
+        console.error('❌ Error obteniendo roles:', rolesError);
+        throw rolesError;
+      }
 
+      console.log('📊 Roles obtenidos:', userRoles?.length);
+
+      // 2. Obtener emails de los usuarios
       const usersWithEmails = await Promise.all(
         (userRoles || []).map(async (userRole) => {
-          const { data: { user } } = await supabase.auth.admin.getUserById(userRole.user_id);
-          return {
-            ...userRole,
-            email: user?.email || 'N/A',
-          };
+          try {
+            // 👇 IMPORTANTE: Esto requiere service_role key
+            const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userRole.user_id);
+            
+            if (userError) {
+              console.warn(`⚠️ No se pudo obtener usuario ${userRole.user_id}:`, userError);
+            }
+            
+            return {
+              ...userRole,
+              email: user?.email || 'Email no disponible',
+            };
+          } catch (err) {
+            console.error('Error al obtener email:', err);
+            return {
+              ...userRole,
+              email: 'Error al cargar',
+            };
+          }
         })
       );
 
       setUsers(usersWithEmails);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+      console.log('✅ Usuarios cargados:', usersWithEmails.length);
+    } catch (error: any) {
+      console.error('❌ Error fetching users:', error);
+      setError('Error al cargar los usuarios. Por favor intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -72,6 +108,7 @@ export default function Users() {
     });
   };
 
+  // Guard: Solo admins
   if (role !== 'admin') {
     return (
       <div className="flex items-center justify-center h-96">
@@ -88,6 +125,7 @@ export default function Users() {
     );
   }
 
+  // Loading
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -99,13 +137,44 @@ export default function Users() {
     );
   }
 
+  // Error
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <p className="text-red-700 mb-4">{error}</p>
+            <button
+              onClick={fetchUsers}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Usuarios</h1>
-        <p className="text-slate-600">
-          Gestión de usuarios y roles del sistema
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Usuarios</h1>
+            <p className="text-slate-600">
+              Gestión de usuarios y roles del sistema
+            </p>
+          </div>
+          
+          {/* 👇 OPCIONAL: Botón para recargar */}
+          <button
+            onClick={fetchUsers}
+            className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition"
+          >
+            Actualizar
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -144,7 +213,7 @@ export default function Users() {
                           <UserCircle className="w-5 h-5 text-slate-600" />
                         </div>
                         <span className="text-sm font-medium text-slate-900">
-                          Usuario
+                          {user.email.split('@')[0]}
                         </span>
                       </div>
                     </td>
@@ -163,13 +232,6 @@ export default function Users() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          <strong>Nota:</strong> Para agregar nuevos usuarios al sistema, deben registrarse primero en la aplicación.
-          Los administradores pueden asignar roles desde la consola de Supabase.
-        </p>
       </div>
     </div>
   );
