@@ -4,6 +4,7 @@ import { Schedule, City, DayOfWeek } from '../types/database';
 import { Plus, Clock, ToggleLeft, ToggleRight } from 'lucide-react';
 import ScheduleForm from '../components/ScheduleForm';
 import { useAuth } from '../contexts/AuthContext';
+import {API_URL} from '../config/api';
 
 interface ScheduleWithCity extends Schedule {
   cities?: City | null;
@@ -34,50 +35,83 @@ export default function Schedules() {
     fetchData();
   }, []);
 
+ 
   const fetchData = async () => {
-    try {
-      const [schedulesData, citiesData] = await Promise.all([
-        supabase
-          .from('schedules')
-          .select('*, cities(*)')
-          .order('city_id')
-          .order('day_of_week'),
-        supabase
-          .from('cities')
-          .select('*')
-          .eq('is_active', true)
-          .order('name'),
-      ]);
+  try {
+    setLoading(true);
 
-      if (schedulesData.error) throw schedulesData.error;
-      if (citiesData.error) throw citiesData.error;
+    const [schedulesResponse, citiesResponse] = await Promise.all([
+      fetch(`${API_URL}/api/schedules?admin=true`),
+      supabase
+        .from('cities')
+        .select('*')
+        .order('name'),
+    ]);
 
-      setSchedules(schedulesData.data || []);
-      setCities(citiesData.data || []);
+    const schedulesResult = await schedulesResponse.json();
 
-      if (citiesData.data && citiesData.data.length > 0) {
-        setSelectedCity(citiesData.data[0].id);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
+    if (!schedulesResponse.ok || !schedulesResult.success) {
+      throw new Error('Error cargando horarios');
     }
-  };
 
-  const toggleScheduleStatus = async (schedule: ScheduleWithCity) => {
-    try {
-      const { error } = await supabase
-        .from('schedules')
-        .update({ is_active: !schedule.is_active })
-        .eq('id', schedule.id);
-
-      if (error) throw error;
-      fetchData();
-    } catch (error) {
-      console.error('Error toggling schedule status:', error);
+    if (citiesResponse.error) {
+      throw citiesResponse.error;
     }
-  };
+
+    setSchedules(schedulesResult.data || []);
+    setCities(citiesResponse.data || []);
+    if (citiesResponse.data && citiesResponse.data.length > 0) {
+      setSelectedCity(citiesResponse.data[0].id);
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const toggleScheduleStatus = async (schedule: ScheduleWithCity) => {
+  console.log('🟡 toggleScheduleStatus llamado');
+  console.log('📦 Schedule recibido:', schedule);
+
+  try {
+     const payload = {
+       is_active: !schedule.is_active,
+     };
+
+     console.log('📤 Payload enviado al backend:', payload);
+     console.log(
+       '🌐 Endpoint:',
+       `${API_URL}/api/schedules/${schedule.id}/status`
+     );
+
+     const response = await fetch(
+       `${API_URL}/api/schedules/${schedule.id}/status`,
+       {
+         method: 'PATCH',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(payload),
+       }
+     );
+
+     console.log('📡 Response status:', response.status);
+     console.log('📡 Response ok:', response.ok);
+
+     const result = await response.json();
+     console.log('📥 Respuesta del backend:', result);
+
+     if (!response.ok || !result.success) {
+       console.error('❌ Error reportado por el backend:', result.error);
+       throw new Error(result.error || 'Error actualizando horario');
+     }
+ 
+     await fetchData();
+  } catch (error) {
+    console.error('🔥 Error en toggleScheduleStatus:', error);
+  }
+};
 
   const handleEdit = (schedule: ScheduleWithCity) => {
     setEditingSchedule(schedule);

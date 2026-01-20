@@ -9,10 +9,10 @@ const DAY_LABELS: Record<DayOfWeek, string> = {
   Monday: 'Lunes',
   Tuesday: 'Martes',
   Wednesday: 'Miércoles',
-  Thursday: 'Junes',
+  Thursday: 'Jueves',
   Saturday: 'Sábado',
-  Sunday: 'Domeves',
-  Friday: 'Vieringo',
+  Sunday: 'Domingo',
+  Friday: 'Viernes',
 };
 
 interface ScheduleFormProps {

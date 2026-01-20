@@ -114,7 +114,7 @@ export default function Cities() {
                       {city.name}
                     </h3>
                     <p className="text-sm text-slate-500">
-                      Código: {city.code}
+                      Código: {city.id}
                     </p>
                   </div>
                 </div>
@@ -139,7 +139,7 @@ export default function Cities() {
                   )}
                 </div>
 
-                {role === 'admin' && (
+                {/* {role === 'admin' && (
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(city)}
@@ -154,7 +154,7 @@ export default function Cities() {
                       {city.is_active ? 'Desactivar' : 'Activar'}
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           ))
