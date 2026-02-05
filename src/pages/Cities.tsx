@@ -32,24 +32,24 @@ export default function Cities() {
     }
   };
 
-  const toggleCityStatus = async (city: City) => {
-    try {
-      const { error } = await supabase
-        .from('cities')
-        .update({ is_active: !city.is_active })
-        .eq('id', city.id);
+  // const toggleCityStatus = async (city: City) => {
+  //   try {
+  //     const { error } = await supabase
+  //       .from('cities')
+  //       .update({ is_active: !city.is_active })
+  //       .eq('id', city.id);
 
-      if (error) throw error;
-      fetchCities();
-    } catch (error) {
-      console.error('Error toggling city status:', error);
-    }
-  };
+  //     if (error) throw error;
+  //     fetchCities();
+  //   } catch (error) {
+  //     console.error('Error toggling city status:', error);
+  //   }
+  // };
 
-  const handleEdit = (city: City) => {
-    setEditingCity(city);
-    setShowForm(true);
-  };
+  // const handleEdit = (city: City) => {
+  //   setEditingCity(city);
+  //   setShowForm(true);
+  // };
 
   const handleCloseForm = () => {
     setShowForm(false);

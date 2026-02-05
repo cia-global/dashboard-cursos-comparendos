@@ -100,14 +100,19 @@ export default function Reservations() {
 
   // 👇 FILTRAR EN EL CLIENTE (sin hacer fetch)
   const filteredReservations = useMemo(() => {
-    if (!searchTerm) return allReservations;
-
-    const search = searchTerm.toLowerCase().trim();
-    return allReservations.filter((reservation) =>
-      reservation.full_name.toLowerCase().includes(search) ||
-      reservation.id_number.includes(search) ||
-      reservation.citation_number.toLowerCase().includes(search)
-    );
+    let results = allReservations;
+    
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase().trim();
+      results = allReservations.filter((reservation) =>
+        reservation.full_name.toLowerCase().includes(search) ||
+        reservation.id_number.includes(search) ||
+        reservation.citation_number.toLowerCase().includes(search)
+      );
+    }
+    
+    // 👈 Invertir el orden: mostrar las citas más nuevas primero
+    return [...results].reverse();
   }, [allReservations, searchTerm]); // 👈 Se recalcula solo cuando cambian estas dependencias
 
   const formatDate = (dateString: string) => {

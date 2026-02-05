@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Obtener sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -61,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true); // Agregado para mejor UX
+      // ✅ SIN setLoading aquí
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -71,9 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: null };
     } catch (error) {
       return { error: error as Error };
-    } finally {
-      setLoading(false); // Agregado para mejor UX
     }
+    // ✅ SIN finally con setLoading
   };
 
   const signOut = async () => {

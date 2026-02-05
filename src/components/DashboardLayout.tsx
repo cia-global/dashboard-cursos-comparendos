@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Calendar, MapPin, Users, LogOut, Car, CalendarClock } from 'lucide-react';
+import { LayoutDashboard, Calendar, MapPin, Users, LogOut, CalendarClock } from 'lucide-react';
 
 export default function DashboardLayout() {
   const location = useLocation();
