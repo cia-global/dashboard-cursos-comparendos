@@ -1,7 +1,6 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Car } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,11 +10,12 @@ export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
     setError('');
     setLoading(true);
-
     const { error } = await signIn(email, password);
 
     if (error) {
@@ -25,6 +25,7 @@ export default function Login() {
       navigate('/');
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
@@ -55,7 +56,9 @@ export default function Login() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
                 required
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition"
                 placeholder="usuario@ejemplo.com"
@@ -70,7 +73,9 @@ export default function Login() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
                 required
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition"
                 placeholder="••••••••"
