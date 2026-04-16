@@ -1,9 +1,14 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Bell } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
+import toast, { Toaster } from "react-hot-toast";
+import { supabase } from '../lib/supabase';
 import { LayoutDashboard, Calendar, MapPin, Users, LogOut, CalendarClock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const [notificationsCount, setNotificationsCount] = useState(0);
   const { user, role, signOut } = useAuth();
 
   const menuItems = [
@@ -21,14 +26,71 @@ export default function DashboardLayout() {
     return location.pathname.startsWith(path);
   };
 
+  const playSound = () => {
+  const audio = new Audio("sounds/notification.mp3");
+  audio.play().catch(() => {}); // evita errores de autoplay
+};
+
+  useEffect(() => {
+  const channel = supabase
+    .channel("appointments-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "appointments",
+      },
+      async (payload) => {
+          console.log("📡 Evento realtime recibido:", payload);
+        const appointment = payload.new;
+
+        // 🔥 obtener ciudad (simple)
+        const { data: city } = await supabase
+          .from("cities")
+          .select("name")
+          .eq("id", appointment.city_id)
+          .single();
+          
+        handleNewAppointment({
+          ...appointment,
+          city_name: city?.name || "Ciudad",
+        });
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+const handleNewAppointment = (appointment) => {
+  // 🔴 badge
+  console.log("🔔 Nueva notificación procesada:", appointment);
+  setNotificationsCount((prev) => prev + 1);
+
+  // 🔊 sonido
+  playSound();
+
+
+  toast.success(
+    `Nueva reserva en ${appointment.city_name}\n${appointment.full_name}`,
+    {
+      duration: 5000,
+    }
+  );
+};
+
   return (
     <div className="min-h-screen bg-slate-50 flex shadow-sm border border-slate-600">
+      <Toaster position="top-right" />
       <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full">
         <div className="p-6 border-b border-slate-700">
           <div className="flex items-center gap-3">
             
                <img
-                src="/images/icon.png"
+                src="/images/icon.webp"
                 alt="Banner decorativo"
                 className=" h-10 w-10 object-contain "
                 />
@@ -37,7 +99,17 @@ export default function DashboardLayout() {
               <h1 className="text-lg font-bold">Cursos Comparendos</h1>
               <p className="text-xs text-slate-400">Sistema administrativo</p>
             </div>
+  <div className="relative cursor-pointer">
+  <Bell className="bg-slate-900 text-white  hover:scale-110 transition" size={24} onClick={() => setNotificationsCount(0)} />
+    
+  {notificationsCount > 0 && (
+    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+      {notificationsCount}
+    </span>
+  )}
+</div>
           </div>
+        
         </div>
 
         <nav className="flex-1 p-4">
