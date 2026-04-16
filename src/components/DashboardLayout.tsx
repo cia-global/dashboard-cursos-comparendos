@@ -51,7 +51,7 @@ export default function DashboardLayout() {
           .select("name")
           .eq("id", appointment.city_id)
           .single();
-          console.log("🏙️ Ciudad encontrada:", city);
+          
         handleNewAppointment({
           ...appointment,
           city_name: city?.name || "Ciudad",
@@ -90,7 +90,7 @@ const handleNewAppointment = (appointment) => {
           <div className="flex items-center gap-3">
             
                <img
-                src="/images/icon.png"
+                src="/images/icon.webp"
                 alt="Banner decorativo"
                 className=" h-10 w-10 object-contain "
                 />
