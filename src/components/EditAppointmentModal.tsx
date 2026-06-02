@@ -39,6 +39,7 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
     appointment_date: reservation.appointment_date,
     appointment_time: reservation.appointment_time.substring(0, 5), // HH:mm
     city_id: reservation.city_id,
+    vehicle_plate: reservation.vehicle_plate,
   });
 
   // 👇 CARGAR SCHEDULES AL MONTAR EL COMPONENTE
@@ -258,6 +259,18 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
                   type="email"
                   disabled
                   value={formData.email}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                />
+              </div>
+
+               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Número de Placa
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.vehicle_plate}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
