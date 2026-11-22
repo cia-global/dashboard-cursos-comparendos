@@ -4,7 +4,6 @@ import { Appointment, City } from '../types/database';
 import { Plus, Calendar, Search, NotebookPen, Filter, X  } from 'lucide-react';
 import ReservationForm from '../components/ReservationForm';
 import EditReservationModal from '../components/EditAppointmentModal';
-import { API_URL } from '../config/api';
 
 interface ReservationWithCity extends Appointment {
   cities?: City | null;
@@ -57,42 +56,36 @@ export default function Reservations() {
   const fetchReservations = async () => {
     setLoading(true);
     try {
-      console.log('🔍 Filtros aplicados:', { statusFilter, cityFilter, dateFilter });
+      const pageSize = 1000;
+      const reservations: ReservationWithCity[] = [];
+      let from = 0;
+      let hasMore = true;
 
-      const params = new URLSearchParams();
-      
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (cityFilter !== 'all') params.append('cityId', cityFilter);
-      if (dateFilter) params.append('date', dateFilter);
-
-      const url = `${API_URL}/api/appointments?${params.toString()}`;
-      console.log('📡 Fetching:', url);
-
-      const response = await fetch(url);
-      const result = await response.json();
-
-      console.log('📥 Respuesta del backend:', result);
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Error al cargar reservas');
-      }
-
-      setAllReservations(result.data || []); // 👈 Guardar TODAS las reservas
-    } catch (error) {
-      console.error('❌ Error fetching reservations:', error);
-      // Fallback a Supabase
-      try {
-        const { data, error } = await supabase
+      while (hasMore) {
+        let query = supabase
           .from('appointments')
           .select('*, cities(*), course_types(*)')
           .order('appointment_date', { ascending: true })
-          .order('appointment_time', { ascending: true });
+          .order('appointment_time', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, from + pageSize - 1);
 
+        if (statusFilter !== 'all') query = query.eq('status', statusFilter);
+        if (cityFilter !== 'all') query = query.eq('city_id', cityFilter);
+        if (dateFilter) query = query.eq('appointment_date', dateFilter);
+
+        const { data, error } = await query;
         if (error) throw error;
-        setAllReservations(data || []);
-      } catch (fallbackError) {
-        console.error('Fallback error:', fallbackError);
+
+        const page = (data || []) as ReservationWithCity[];
+        reservations.push(...page);
+        hasMore = page.length === pageSize;
+        from += page.length;
       }
+
+      setAllReservations(reservations);
+    } catch (error) {
+      console.error('❌ Error fetching reservations:', error);
     } finally {
       setLoading(false);
     }
